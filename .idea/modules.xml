@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/preproc/Processing.iml" filepath="$PROJECT_DIR$/preproc/Processing.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/auth_bigdata_ex_sbt.iml" filepath="$PROJECT_DIR$/.idea/modules/auth_bigdata_ex_sbt.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/auth_bigdata_ex_sbt-build.iml" filepath="$PROJECT_DIR$/.idea/modules/auth_bigdata_ex_sbt-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/labeling/labeling.iml" filepath="$PROJECT_DIR$/labeling/labeling.iml" />
-      <module fileurl="file://$PROJECT_DIR$/preproc/Processing.iml" filepath="$PROJECT_DIR$/preproc/Processing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modelpred/modelpred.iml" filepath="$PROJECT_DIR$/modelpred/modelpred.iml" />
     </modules>
   </component>
 </project>
