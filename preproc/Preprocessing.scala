@@ -21,7 +21,7 @@ object Preprocessing {
   {
     println("Andreas")
 
-    /*
+
     //creates a list with the names of all the files in the directory
     val listoffilesPos = getListOfFiles("/home/user/Desktop/project/data/train/pos")
 
@@ -41,7 +41,7 @@ object Preprocessing {
 
     println(stemmer.stemLine("worked dfgdg  is  a bad  tin0foiled'opened porter334parole ponies"))
 
-    */
+
   }
 
   def getListOfFiles(dir: String):List[File] = {
