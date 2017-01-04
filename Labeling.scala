@@ -1,15 +1,10 @@
-package labeling
-
-import java.io.{File, FileOutputStream, PrintWriter}
-
-import feautext.Stemmer
-
-import scala.io.Source
-
 /**
   * Created by george on 15/12/2016.
   */
-
+import java.io.File
+import java.io.PrintWriter
+import java.io.FileOutputStream
+import scala.io.Source
 object Labeling {
 
   def getListOfFiles(directory: String): List[File] = {
@@ -38,9 +33,9 @@ object Labeling {
 
     val pw = new PrintWriter(new FileOutputStream(new File(csvfilename),true))
     if(flag){
-      pw.println('"'+stemNstopwords(this.readFiletoString(file),stemmer,stopWords)+'"'+",positive")
+      pw.println('"'+stemNstopwords(this.readFiletoString(file),stemmer,stopWords)+'"'+",1")
     }else{
-      pw.println('"'+stemNstopwords(this.readFiletoString(file),stemmer,stopWords)+'"'+",negative")
+      pw.println('"'+stemNstopwords(this.readFiletoString(file),stemmer,stopWords)+'"'+",0")
     }
     pw.close()
   }
@@ -98,17 +93,6 @@ object Labeling {
     }
   }
 
-
-
-  /**
-    * @author Alexandros
-    *
-    * Alternative main <br>
-    * proxeiri methodos pou prospernaei to args[String]
-    *
-    * @param stemmer
-    * @param stopWords
-    */
   def toCsv(stemmer: Stemmer, stopWords:List[String]): Unit ={
 
     //the file to write the results
@@ -127,23 +111,6 @@ object Labeling {
 
   }
 
-  /**
-    * @author Alexandros
-    *
-    * Stopwords and Stemming <br>
-    *
-    * Removes the stopwords and finds the root of every word in a sentence <br><br>
-    *
-    * 1. First converts the line to lower case, <br>
-    * 2. Then removes the <em>punctuation<em/>, the <em>numbers<em/>, and the rest <em>special character<em/> (except apostrophe),<br>
-    * 3. After that removes the stopwords, <br>
-    * 4. Applies the stemming process<br>
-    * 5. Finally removes the stopwords that appeared after stemming
-    *
-    * @param line
-    * @param stemmer
-    * @return the clean words of the sentence separated with spaces
-    */
   def stemNstopwords(line: String, stemmer: Stemmer, stopwords: List[String]): String= {
     var cleanline =  line.toLowerCase()
     cleanline = removePunctuation(cleanline)
@@ -151,14 +118,7 @@ object Labeling {
     return stemmer.stemLine(cleanline).filter(w => !stopwords.contains(w)).mkString(" ")
   }
 
-  /**
-    * @author Alexandros
-    *
-    * Removes all special character except for "'" (apostrophe), because the list of stopwords has words like "isn't".
-    *
-    * @param line
-    * @return
-    */
+
   def removePunctuation(line: String): String ={
     val allowedSpecialChars :List[Char] = List('\'', ' ')
     return line.toCharArray.filter(c => {(allowedSpecialChars.contains(c) || c.isLetter)}).mkString

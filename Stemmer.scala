@@ -1,5 +1,3 @@
-package feautext
-
 /**
   * Created by Alex on 14/12/2016.
   *
