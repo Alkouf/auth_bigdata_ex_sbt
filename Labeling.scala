@@ -4,7 +4,9 @@
 import java.io.File
 import java.io.PrintWriter
 import java.io.FileOutputStream
+
 import scala.io.Source
+
 object Labeling {
 
   def getListOfFiles(directory: String): List[File] = {
@@ -29,43 +31,52 @@ object Labeling {
     Source.fromFile(datafn).getLines().mkString
   }
 
-  def writetoCSV(file: File, csvfilename: String,flag:Boolean, stemmer: Stemmer, stopWords: List[String]): Unit = {
+  def writetoCSV(file: File, csvfilename: String, flag:String, textCleaner: TextCleaner): Unit = {
 
     val pw = new PrintWriter(new FileOutputStream(new File(csvfilename),true))
-    if(flag){
-      pw.println('"'+stemNstopwords(this.readFiletoString(file),stemmer,stopWords)+'"'+",1")
-    }else{
-      pw.println('"'+stemNstopwords(this.readFiletoString(file),stemmer,stopWords)+'"'+",0")
-    }
+
+    pw.println('"'+textCleaner.clearText(this.readFiletoString(file))+'"'+","+flag)
+
     pw.close()
   }
 
 
-  def produceCSV(samplesdir: String,csvfile: String, stemmer: Stemmer, stopWords: List[String]): Unit ={
-    this.getListOfSubDir(samplesdir).foreach(d =>if(d.toString.contains("pos")) {
-      println("Number of positive reviews: " +this.getListOfFiles(d.toString).size+ ", at directory: "+d.toString)
-      println("Writing positive reviews to csv...")
-      this.getListOfFiles(d.toString).foreach(f=>this.writetoCSV(f,csvfile,flag=true, stemmer, stopWords))
-    }else {
-      println("Number of negative reviews: " +this.getListOfFiles(d.toString).size+ ", at directory: "+d.toString)
-      println("Writing negative reviews to csv...")
-      this.getListOfFiles(d.toString).foreach(f=>this.writetoCSV(f,csvfile,flag=false, stemmer, stopWords))})
+  def produceCSV(samplesdir: String,csvfile: String, textCleaner: TextCleaner): Unit ={
+    this.getListOfSubDir(samplesdir).foreach(d =>if(d.toString.contains("/train")){
+
+      this.getListOfSubDir(d.toString).foreach(d =>if(d.toString.contains("pos")) {
+        println("Number of positive reviews: " +this.getListOfFiles(d.toString).size+ ", at directory: "+d.toString)
+        println("Writing positive reviews to csv...")
+        this.getListOfFiles(d.toString).foreach(f=>this.writetoCSV(f,csvfile,flag="1", textCleaner))
+      }else if(d.toString.contains("neg")) {
+        println("Number of negative reviews: " +this.getListOfFiles(d.toString).size+ ", at directory: "+d.toString)
+        println("Writing negative reviews to csv...")
+        this.getListOfFiles(d.toString).foreach(f=>this.writetoCSV(f,csvfile,flag="0", textCleaner))
+      })
+
+    }else {//test
+
+      println("Number of test reviews: " +this.getListOfFiles(d.toString).size+ ", at directory: "+ "Test"+d.toString)
+      println("Writing test set reviews to csv...")
+      this.getListOfFiles(d.toString).foreach(f=>this.writetoCSV(f,"test"+csvfile,flag="?", textCleaner ))
+
+    })
   }
 
   def deletePreviousCSV(csvfilename: String): Unit ={
     new File(csvfilename).delete()
+    new File("test"+csvfilename).delete()
   }
+
+
+
 
   def main(args: Array[String]): Unit = {
 
-    val stemmer =new Stemmer
+    val timeStart = System.currentTimeMillis()
 
-    //Create a list with the stopwords
-    val stopWords = scala.io.Source.fromFile(System.getProperty("user.dir")+"/stopWords.txt").getLines.toList
-
-    //!!!
-    //toCsv(stemmer, stopWords)
-
+    val textCleaner = new TextCleaner
+    textCleaner.setup(1)
 
     var  csvfilename : String =""
     if (args.length != 0) {
@@ -84,44 +95,20 @@ object Labeling {
       this.deletePreviousCSV(csvfilename)
       println("Process directory :"+samplesdir)
       //---------------------------------------------
-      this.produceCSV(samplesdir,csvfilename, stemmer, stopWords)
+      this.produceCSV(samplesdir,csvfilename, textCleaner)
       //---------------------------------------------
       println("Writing data to :"+csvfilename)
       println("Labeling finished.")
     }else{
       println("Please provide directory path.")
     }
+
+    println("Time elapsed till now in seconds: "+ (System.currentTimeMillis()-timeStart)/1000.0)
+
+    textCleaner.uniqueWordsCSV(csvfilename)
+
+    println("Total time elapsed in seconds: "+ (System.currentTimeMillis()-timeStart)/1000.0)
   }
 
-  def toCsv(stemmer: Stemmer, stopWords:List[String]): Unit ={
-
-    //the file to write the results
-    val csvfilename = System.getProperty("user.dir")+"/sampleData.csv"
-
-    //the directory where the data are located
-    val datadirectory = System.getProperty("user.dir")+"/sampleData/train"
-
-    println("deleting existing file: "+ csvfilename)
-    this.deletePreviousCSV(csvfilename)
-
-    println("Process directory :"+datadirectory)
-    println("Producing csv...")
-    this.produceCSV(datadirectory,csvfilename, stemmer, stopWords)
-    println("Done")
-
-  }
-
-  def stemNstopwords(line: String, stemmer: Stemmer, stopwords: List[String]): String= {
-    var cleanline =  line.toLowerCase()
-    cleanline = removePunctuation(cleanline)
-    cleanline = cleanline.split(" ").filter(word => !stopwords.contains(word)).mkString(" ")
-    return stemmer.stemLine(cleanline).filter(w => !stopwords.contains(w)).mkString(" ")
-  }
-
-
-  def removePunctuation(line: String): String ={
-    val allowedSpecialChars :List[Char] = List('\'', ' ')
-    return line.toCharArray.filter(c => {(allowedSpecialChars.contains(c) || c.isLetter)}).mkString
-  }
 
 }
