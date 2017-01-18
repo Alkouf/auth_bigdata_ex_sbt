@@ -68,7 +68,23 @@ object Labeling {
     new File("test"+csvfilename).delete()
   }
 
+  def lineDistinctWords(line:String):String= {
+    var docdistinctWords = scala.collection.mutable.Set.empty[String]
+    line.split(" ").foreach(word => docdistinctWords.add(word))
+    docdistinctWords.mkString(" ")
+  }
 
+  def produceDFFilter(samplesdir: String,minDF:Int=2,maxDF:Int=23000):Array[String]= {
+
+    val nf=this.getListOfSubDir(samplesdir).flatMap(d=>this.getListOfFiles(d.toString)).map(f=>1).sum
+    val df = this.getListOfSubDir(samplesdir).flatMap(d=>this.getListOfFiles(d.toString)).
+      flatMap(file=>Source.fromFile(file).getLines()).map(line=>this.lineDistinctWords(removePunctuation(line))).
+      flatMap(_.split(" ")).foldLeft(Map.empty[String,Int]){
+      (count,word)=> count + (word ->(count.getOrElse(word,0) + 1))
+    }
+    val dfiltered=df.filter(K=>(K._2<minDF)||(K._2>maxDF))
+    dfiltered.map(K=>K._1).toArray
+}
 
 
   def main(args: Array[String]): Unit = {
