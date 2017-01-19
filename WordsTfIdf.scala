@@ -14,13 +14,14 @@ import org.apache.spark.ml.classification.LogisticRegression
 object WordsTfIdf {
 
 
-  def tfidf(spark: SparkSession,inputFile:String,splitRate:Array[Double]): Array[Dataset[Row]] ={
-    val trainData = spark.sparkContext.textFile(inputFile, 2).map(line => (line.split(",")(0), line.split(",")(1).toDouble))
+  
+  def tfidf(spark: SparkSession,inputFile:String,splitRate:Array[Double],numFeatures:Int=3000): Array[Dataset[Row]] ={
+    val trainData = spark.sparkContext.textFile(inputFile, 2).map(line => (line.split(",")(0).replace("\"",""), line.split(",")(1).toDouble))
     val dfdata = spark.createDataFrame(trainData).toDF("comments", "label")
     val tokenizer = new Tokenizer().setInputCol("comments").setOutputCol("words")
     val wordsData = tokenizer.transform(dfdata)
     //----------------------Simple Tf IDF----------------------------------------------
-    val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures")
+    val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(numFeatures)
     val feautirizedData = hashingTF.transform(wordsData)
     val idf = new IDF().setInputCol("rawFeatures").setOutputCol("features")
     val idfModel = idf.fit(feautirizedData)
@@ -28,8 +29,10 @@ object WordsTfIdf {
     rescaledData.randomSplit(splitRate)
   }
 
+
+
   def ngramtf(spark: SparkSession,inputFile:String,splitRate:Array[Double],nValue:Int=2): Array[Dataset[Row]] ={
-    val trainData = spark.sparkContext.textFile(inputFile, 2).map(line => (line.split(",")(0), line.split(",")(1).toDouble))
+    val trainData = spark.sparkContext.textFile(inputFile, 2).map(line => (line.split(",")(0).replace("\"",""), line.split(",")(1).toDouble))
     val dfdata = spark.createDataFrame(trainData).toDF("comments", "label")
     val tokenizer = new Tokenizer().setInputCol("comments").setOutputCol("words")
     val wordsData = tokenizer.transform(dfdata)
@@ -42,7 +45,7 @@ object WordsTfIdf {
   }
 
   def words2Vec(spark: SparkSession,inputFile:String,splitRate:Array[Double],vectorsize:Int=100,minCount:Int=0): Array[Dataset[Row]]={
-    val trainData = spark.sparkContext.textFile(inputFile, 2).map(line => (line.split(",")(0), line.split(",")(1).toDouble))
+    val trainData = spark.sparkContext.textFile(inputFile, 2).map(line => (line.split(",")(0).replace("\"",""), line.split(",")(1).toDouble))
     val dfdata = spark.createDataFrame(trainData).toDF("comments", "label")
     val tokenizer = new Tokenizer().setInputCol("comments").setOutputCol("words")
     //----------------------Word2Vec -------------------------------------------------------
@@ -51,7 +54,7 @@ object WordsTfIdf {
     val model = word2Vec.fit(wordsData)
     val result = model.transform(wordsData)
     result.randomSplit(splitRate)
-  }
+}
 
   def main(args: Array[String]): Unit = {
     var csvfilename: String = ""
