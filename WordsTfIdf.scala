@@ -14,6 +14,28 @@ import org.apache.spark.ml.classification.LogisticRegression
 object WordsTfIdf {
 
 
+  def arrayToString(array: Array[String]) : String = {
+    var str = array(array.length-1) + " ";
+    for(i <- 0 to (array.length/2)-1)
+    {
+      str = str.concat(array(i)).concat(":" + array((array.length/2)+i) + " ")
+    }
+    str
+  }
+
+
+  def datasetToRDD(data:Dataset[Row], numOfFeatures: Int): Unit = {
+
+    data.select("features", "label").rdd.map(line => line.mkString.replaceAll("\\(" + numOfFeatures + ",", ""))
+      .map(line => {line.replaceAll("\\[", "").replaceAll("\\]","").replaceAll("\\)",",")})
+      .map(line => {arrayToString(line.split(","))})
+      //.foreach(x => println(x))
+      .coalesce(1, true)
+      .saveAsTextFile("data/rddData")
+  }
+  
+  
+  
   
   def tfidf(spark: SparkSession,inputFile:String,splitRate:Array[Double],numFeatures:Int=3000): Array[Dataset[Row]] ={
     val trainData = spark.sparkContext.textFile(inputFile, 2).map(line => (line.split(",")(0).replace("\"",""), line.split(",")(1).toDouble))
