@@ -48,7 +48,7 @@ object WordsTfIdf {
   }
 
 
-  def tfidf(spark: SparkSession,inputFile:String,splitRate:Array[Double],numFeatures:Int=3000, pca:Int = 0): Array[Dataset[Row]] ={
+  def tfidf(spark: SparkSession,inputFile:String,splitRate:Array[Double],numFeatures:Int=100000, pca:Int = 0): Array[Dataset[Row]] ={
     val wordsData = tokenizeWords(spark: SparkSession,inputFile:String)
     //----------------------Simple Tf IDF----------------------------------------------
     val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(numFeatures)
